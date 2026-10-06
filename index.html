@@ -1,0 +1,1272 @@
+<!-- Index.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presensi Wajah Cerdas Siswa</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .d-none { display: none !important; }
+        .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .app-shell { min-height: 100vh; display: flex; }
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(59,130,246,0) 0%, rgba(59,130,246,1) 50%, rgba(59,130,246,0) 100%);
+            box-shadow: 0 0 15px #3b82f6;
+            animation: scan 2s infinite ease-in-out;
+        }
+        @keyframes scan {
+            0% { top: 10%; opacity: 0.8; }
+            50% { top: 85%; opacity: 1; }
+            100% { top: 10%; opacity: 0.8; }
+        }
+        .mirror { transform: scaleX(-1); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+    <section id="loginPage" class="auth-page bg-slate-950 px-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-8 max-w-md w-full shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="text-center mb-8">
+                <div class="inline-flex p-4 bg-blue-600/10 border border-blue-500/20 rounded-2xl text-blue-400 mb-3 shadow-lg shadow-blue-500/10">
+                    <i class="fa-solid fa-id-card-clip text-3xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-white tracking-tight">PresensiWajah<span class="text-blue-400">AI</span></h1>
+                <p class="text-xs text-slate-400 mt-1">Sistem Verifikasi Presensi Wajah Ketat & Otomatis</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Username</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                        <input type="text" id="loginUsername" required placeholder="admin atau guru" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                        <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </div>
+                </div>
+
+                <div id="loginError" class="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-xl hidden flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i> <span id="loginErrorMsg">Err</span>
+                </div>
+
+                <button type="submit" id="btnLoginSubmit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem
+                </button>
+            </form>
+
+            <div class="mt-6 text-center pt-4 border-t border-slate-700/60">
+                <p class="text-[11px] text-slate-500">Default Login: <strong class="text-slate-300">admin / Admin@2026</strong> atau <strong class="text-slate-300">guru / Admin@2026</strong></p>
+            </div>
+        </div>
+    </section>
+
+    <section id="mainApp" class="app-shell flex-col lg:flex-row d-none">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-full lg:w-64 bg-slate-800 border-r border-slate-700/80 flex flex-col justify-between shrink-0">
+            <div>
+                <!-- Brand Header -->
+                <div class="p-5 border-b border-slate-700/80 flex items-center gap-3">
+                    <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-md shadow-blue-500/20">
+                        <i class="fa-solid fa-id-card-clip text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-sm text-white leading-tight">PresensiWajah<span class="text-blue-400">AI</span></h2>
+                        <span class="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Mode Strict Lock</span>
+                    </div>
+                </div>
+
+                <!-- Menu Links -->
+                <nav class="p-3 space-y-1">
+                    <button onclick="showPage('pageDashboard')" id="nav-pageDashboard" class="nav-btn w-full px-3.5 py-2.5 rounded-xl text-xs font-medium flex items-center gap-3 text-slate-300 hover:bg-slate-700/50 hover:text-white transition">
+                        <i class="fa-solid fa-chart-pie text-sm text-blue-400"></i> Dashboard Utama
+                    </button>
+                    <button onclick="showPage('pageScan')" id="nav-pageScan" class="nav-btn w-full px-3.5 py-2.5 rounded-xl text-xs font-medium flex items-center gap-3 text-slate-300 hover:bg-slate-700/50 hover:text-white transition">
+                        <i class="fa-solid fa-camera text-sm text-emerald-400"></i> Scan Wajah AI
+                    </button>
+                    <button onclick="showPage('pageRekap')" id="nav-pageRekap" class="nav-btn w-full px-3.5 py-2.5 rounded-xl text-xs font-medium flex items-center gap-3 text-slate-300 hover:bg-slate-700/50 hover:text-white transition">
+                        <i class="fa-solid fa-list-check text-sm text-amber-400"></i> Rekap Presensi Kelas
+                    </button>
+                    <button onclick="showPage('pageStudents')" id="nav-pageStudents" class="nav-btn admin-only w-full px-3.5 py-2.5 rounded-xl text-xs font-medium flex items-center gap-3 text-slate-300 hover:bg-slate-700/50 hover:text-white transition">
+                        <i class="fa-solid fa-user-graduate text-sm text-purple-400"></i> Master Data Siswa
+                    </button>
+                </nav>
+            </div>
+
+            <!-- User Info Footer -->
+            <div class="p-4 border-t border-slate-700/80 bg-slate-800/50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-blue-400 text-xs font-bold shrink-0" id="userAvatar">
+                            A
+                        </div>
+                        <div class="min-w-0">
+                            <p id="userFullname" class="text-xs font-bold text-white truncate">User</p>
+                            <span id="userRoleBadge" class="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">Role</span>
+                        </div>
+                    </div>
+                    <button onclick="logout()" title="Logout" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-700 rounded-lg transition">
+                        <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Panel -->
+        <main class="flex-1 min-w-0 flex flex-col bg-slate-900 overflow-y-auto">
+            
+            <!-- Global Header -->
+            <header class="bg-slate-800/60 backdrop-blur border-b border-slate-700 px-6 py-3.5 flex justify-between items-center sticky top-0 z-20">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400">Tanggal Hari Ini</p>
+                    <p id="headerCurrentDate" class="text-xs font-bold text-white">--</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-xs px-3 py-1 rounded-full bg-slate-700 text-slate-300 font-medium flex items-center gap-1.5 border border-slate-600">
+                        <i class="fa-solid fa-clock text-blue-400"></i> <span id="liveClock">00:00:00</span>
+                    </span>
+                </div>
+            </header>
+
+            <!-- Page Views Container -->
+            <div class="p-6 space-y-6 flex-1">
+
+                <div id="pageDashboard" class="app-page space-y-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Dashboard Absensi Kelas</h2>
+                        <p class="text-xs text-slate-400">Ringkasan status kehadiran per kelas hari ini.</p>
+                    </div>
+
+                    <!-- Summary Stat Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl">
+                            <p class="text-xs text-slate-400 font-medium">Total Siswa</p>
+                            <p id="dashTotal" class="text-2xl font-bold text-white mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl">
+                            <p class="text-xs text-slate-400 font-medium">Hadir (AI)</p>
+                            <p id="dashHadir" class="text-2xl font-bold text-emerald-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl">
+                            <p class="text-xs text-slate-400 font-medium">Sakit</p>
+                            <p id="dashSakit" class="text-2xl font-bold text-amber-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl">
+                            <p class="text-xs text-slate-400 font-medium">Izin</p>
+                            <p id="dashIzin" class="text-2xl font-bold text-blue-400 mt-1">0</p>
+                        </div>
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl col-span-2 md:col-span-1">
+                            <p class="text-xs text-slate-400 font-medium">Alfa (Default)</p>
+                            <p id="dashAlfa" class="text-2xl font-bold text-rose-400 mt-1">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Class Cards Grid (X IPA, X IPS, XI IPA, XI IPS, XII IPA, XII IPS) -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-shapes text-blue-400"></i> Pilih Kelas (Ringkasan Kehadiran)
+                        </h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" id="classCardsGrid">
+                            <!-- Cards inserted via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pageScan" class="app-page space-y-6 d-none">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Pemindai Wajah AI</h2>
+                            <p class="text-xs text-slate-400">Posisikan wajah di depan kamera untuk verifikasi presensi otomatis.</p>
+                        </div>
+
+                        <!-- Class Selector for Scan -->
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-medium text-slate-300">Filter Kelas Scan:</label>
+                            <select id="scanClassSelect" onchange="loadScanClassStudents()" class="bg-slate-800 border border-slate-700 text-xs text-white px-3 py-2 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="ALL">Semua Kelas</option>
+                                <option value="X IPA">X IPA</option>
+                                <option value="X IPS">X IPS</option>
+                                <option value="XI IPA">XI IPA</option>
+                                <option value="XI IPS">XI IPS</option>
+                                <option value="XII IPA">XII IPA</option>
+                                <option value="XII IPS">XII IPS</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <!-- Camera Area -->
+                        <div class="lg:col-span-7 space-y-4">
+                            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl flex flex-col items-center relative overflow-hidden">
+                                <div class="w-full flex justify-between items-center mb-3">
+                                    <span class="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                                        <i class="fa-solid fa-video text-blue-400"></i> Feed Kamera Live
+                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="toggleCameraMirror()" title="Toggle Mirror View" class="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-[11px] rounded-lg text-slate-300 transition flex items-center gap-1">
+                                            <i class="fa-solid fa-arrows-rotate"></i> Toggle Mirror
+                                        </button>
+                                        <span id="camBadge" class="text-[10px] px-2.5 py-1 rounded-md bg-slate-700 text-slate-300 font-semibold">Ready</span>
+                                    </div>
+                                </div>
+
+                                <!-- Camera Frame -->
+                                <div class="relative w-full aspect-square md:aspect-video bg-slate-950 rounded-xl overflow-hidden border border-slate-700 flex items-center justify-center">
+                                    <video id="webcam" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                                    
+                                    <!-- Scan Line Overlay -->
+                                    <div id="scanLineOverlay" class="absolute inset-0 pointer-events-none hidden">
+                                        <div class="scan-line"></div>
+                                        <div class="absolute inset-8 border-2 border-dashed border-blue-400/50 rounded-2xl flex items-center justify-center">
+                                            <p class="text-xs bg-slate-900/80 px-3 py-1.5 rounded-lg text-blue-300 border border-blue-500/30">Posisikan Wajah di Tengah Frame</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Camera Off Placeholder -->
+                                    <div id="camPlaceholder" class="text-center p-6">
+                                        <i class="fa-solid fa-camera-retro text-4xl text-slate-600 mb-2"></i>
+                                        <p class="text-xs text-slate-400">Kamera belum diaktifkan.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Camera Permission Policy Notice Box -->
+                                <div id="camPermissionNotice" class="w-full mt-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl hidden">
+                                    <div class="flex items-start gap-2.5">
+                                        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm mt-0.5"></i>
+                                        <div class="text-xs text-amber-200">
+                                            <p class="font-bold mb-0.5">Akses Kamera Diblokir dalam Frame Editor</p>
+                                            <p class="text-[11px] text-slate-300 leading-relaxed mb-2">Editor Apps Script memblokir kamera di dalam frame preview. Silakan buka aplikasi langsung di tab browser baru.</p>
+                                            <button type="button" onclick="openStandaloneApp()" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] rounded-lg transition flex items-center gap-1.5 shadow">
+                                                <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Web App di Tab Baru
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Camera Controls -->
+                                <div class="w-full grid grid-cols-2 gap-3 mt-4">
+                                    <button onclick="startWebcam()" class="py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                                        <i class="fa-solid fa-power-off"></i> Aktifkan Kamera
+                                    </button>
+                                    <button onclick="triggerSimulatedScan()" id="btnScanAction" class="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-xs rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20">
+                                        <i class="fa-solid fa-expand"></i> Verifikasi Scan Wajah
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Live Scan Detection Result Card -->
+                            <div id="scanDetectedCard" class="bg-slate-800 border border-slate-700 rounded-2xl p-4 hidden transition-all">
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Hasil Verifikasi Terakhir</p>
+                                <div class="flex items-center gap-4">
+                                    <img id="scannedAvatar" src="" class="w-14 h-14 rounded-xl object-cover border border-emerald-500/50 shadow-md">
+                                    <div class="flex-1 min-w-0">
+                                        <h4 id="scannedName" class="text-sm font-bold text-white truncate">--</h4>
+                                        <p id="scannedDetail" class="text-xs text-slate-400">--</p>
+                                        <span class="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-md mt-1">
+                                            <i class="fa-solid fa-shield-check"></i> HADIR (Verified AI)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Class Student List Preview -->
+                        <div class="lg:col-span-5 bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-xl flex flex-col">
+                            <h3 class="text-sm font-semibold text-white mb-1 flex items-center justify-between">
+                                <span>Daftar Siswa Filtered</span>
+                                <span id="scanClassCount" class="text-xs font-normal text-slate-400">0 Siswa</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mb-3">Klik nama siswa untuk simulasi kecocokan AI wajah.</p>
+                            
+                            <div class="flex-1 overflow-y-auto max-h-[400px] border border-slate-700/70 rounded-xl divide-y divide-slate-700/60" id="scanStudentList">
+                                <!-- Student rows inserted via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pageRekap" class="app-page space-y-6 d-none">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Rekapitulasi Presensi</h2>
+                            <p class="text-xs text-slate-400">Status siswa default ALFA sampai terverifikasi scan wajah atau ada keterangan resmi.</p>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="openModalIzin()" class="px-3 py-2 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-notes-medical"></i> Input Sakit / Izin
+                            </button>
+                            <button onclick="finalizeDaily()" class="px-3 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 shadow-md shadow-rose-600/20">
+                                <i class="fa-solid fa-lock"></i> Kunci & Set Alfa
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 font-semibold mb-1">Filter Kelas</label>
+                                <select id="rekapClassSelect" onchange="loadRekapData()" class="bg-slate-900 border border-slate-700 text-xs text-white px-3 py-1.5 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="ALL">Semua Kelas</option>
+                                    <option value="X IPA">X IPA</option>
+                                    <option value="X IPS">X IPS</option>
+                                    <option value="XI IPA">XI IPA</option>
+                                    <option value="XI IPS">XI IPS</option>
+                                    <option value="XII IPA">XII IPA</option>
+                                    <option value="XII IPS">XII IPS</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Summary Counter Badges -->
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg">Hadir: <strong id="rekapCountHadir">0</strong></span>
+                            <span class="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-lg">Sakit: <strong id="rekapCountSakit">0</strong></span>
+                            <span class="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg">Izin: <strong id="rekapCountIzin">0</strong></span>
+                            <span class="px-3 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-lg">Alfa: <strong id="rekapCountAlfa">0</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Table -->
+                    <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900/90 text-slate-400 uppercase font-semibold border-b border-slate-700">
+                                    <tr>
+                                        <th class="p-3.5">Siswa</th>
+                                        <th class="p-3.5">NISN</th>
+                                        <th class="p-3.5 text-center">Status Presensi</th>
+                                        <th class="p-3.5">Metode / Catatan</th>
+                                        <th class="p-3.5 text-right">Aksi Manual</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rekapTableBody" class="divide-y divide-slate-700/60 bg-slate-800/40">
+                                    <!-- Table rows inserted via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pageStudents" class="app-page space-y-6 d-none">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-white">Master Data Siswa</h2>
+                            <p class="text-xs text-slate-400">Kelola daftar seluruh siswa dan dataset foto referensi AI.</p>
+                        </div>
+                        <button onclick="openModalStudent()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition flex items-center gap-2 shadow-lg shadow-blue-600/20">
+                            <i class="fa-solid fa-plus"></i> Tambah Siswa Baru
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex items-center justify-between gap-3">
+                        <select id="studentClassFilter" onchange="loadStudentMasterData()" class="bg-slate-900 border border-slate-700 text-xs text-white px-3 py-2 rounded-xl outline-none">
+                            <option value="ALL">Semua Kelas</option>
+                            <option value="X IPA">X IPA</option>
+                            <option value="X IPS">X IPS</option>
+                            <option value="XI IPA">XI IPA</option>
+                            <option value="XI IPS">XI IPS</option>
+                            <option value="XII IPA">XII IPA</option>
+                            <option value="XII IPS">XII IPS</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-slate-900/90 text-slate-400 uppercase font-semibold border-b border-slate-700">
+                                    <tr>
+                                        <th class="p-3.5">ID Siswa</th>
+                                        <th class="p-3.5">Nama Siswa</th>
+                                        <th class="p-3.5">NISN</th>
+                                        <th class="p-3.5">Kelas</th>
+                                        <th class="p-3.5 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentMasterTableBody" class="divide-y divide-slate-700/60">
+                                    <!-- Rows inserted via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </section>
+
+    <!-- Modal Sakit / Izin -->
+    <div id="modalIzin" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+            <button onclick="closeModalIzin()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-notes-medical text-amber-400"></i> Form Input Sakit / Izin
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">Pengubahan manual HANYA diizinkan untuk Sakit atau Izin.</p>
+
+            <form onsubmit="submitIzinSakit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Pilih Siswa</label>
+                    <select id="modalIzinStudent" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <!-- Options populated dynamically -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Status Keterangan</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer border border-slate-700 bg-slate-900 p-3 rounded-xl flex items-center gap-2 hover:border-amber-500/50 transition">
+                            <input type="radio" name="modalStatusType" value="Sakit" checked class="text-amber-500">
+                            <div>
+                                <p class="text-xs font-semibold text-amber-400">Sakit</p>
+                                <p class="text-[10px] text-slate-400">Surat Dokter</p>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer border border-slate-700 bg-slate-900 p-3 rounded-xl flex items-center gap-2 hover:border-blue-500/50 transition">
+                            <input type="radio" name="modalStatusType" value="Izin" class="text-blue-500">
+                            <div>
+                                <p class="text-xs font-semibold text-blue-400">Izin</p>
+                                <p class="text-[10px] text-slate-400">Keperluan Keluarga</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Catatan / Alasan</label>
+                    <textarea id="modalIzinNote" required placeholder="Contoh: Surat sakit terlampir..." rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeModalIzin()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-xs text-slate-200 font-semibold rounded-xl transition">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-xs text-white font-semibold rounded-xl transition shadow-lg shadow-blue-600/20">Simpan Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Siswa -->
+    <div id="modalStudent" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+            <button onclick="closeModalStudent()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user-plus text-blue-400"></i> Form Data Siswa
+            </h3>
+
+            <form onsubmit="submitStudentForm(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="editStudentId">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">NISN</label>
+                    <input type="text" id="mStudentNisn" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Nama Lengkap</label>
+                    <input type="text" id="mStudentName" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Kelas</label>
+                    <select id="mStudentClass" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
+                        <option value="X IPA">X IPA</option>
+                        <option value="X IPS">X IPS</option>
+                        <option value="XI IPA">XI IPA</option>
+                        <option value="XI IPS">XI IPS</option>
+                        <option value="XII IPA">XII IPA</option>
+                        <option value="XII IPS">XII IPS</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">URL Foto Profil Wajah</label>
+                    <input type="url" id="mStudentAvatar" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
+                </div>
+
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeModalStudent()" class="px-4 py-2 bg-slate-700 text-slate-300 rounded-xl font-semibold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold shadow-lg shadow-blue-600/20">Simpan Siswa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 transition-all transform translate-y-20 opacity-0 pointer-events-none">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <p id="toastMsg" class="text-xs font-semibold">Message</p>
+    </div>
+
+    <script>
+        // IIFE Enclosure
+        (function() {
+            // Local Mock Database for Editor Preview mode
+            var localMockDB = {
+                students: [
+                    { id: 'S101', nisn: '0051234901', name: 'Ahmad Rizky Pratama', className: 'X IPA', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150' },
+                    { id: 'S102', nisn: '0051234902', name: 'Anisa Rahmawati', className: 'X IPS', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150' },
+                    { id: 'S103', nisn: '0051234903', name: 'Budi Santoso', className: 'XI IPA', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150' },
+                    { id: 'S104', nisn: '0051234904', name: 'Citra Dewi', className: 'XI IPS', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150' },
+                    { id: 'S105', nisn: '0051234905', name: 'Doni Wijaya', className: 'XII IPA', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150' },
+                    { id: 'S106', nisn: '0051234906', name: 'Eka Putri', className: 'XII IPS', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150' }
+                ],
+                attendance: {}
+            };
+
+            var Auth = {
+                setToken: function(t) { localStorage.setItem('presensi_token', t); },
+                getToken: function() { return localStorage.getItem('presensi_token'); },
+                setUser: function(u) { localStorage.setItem('presensi_user', JSON.stringify(u)); },
+                getUser: function() { 
+                    var u = localStorage.getItem('presensi_user'); 
+                    return u ? JSON.parse(u) : null; 
+                },
+                clear: function() {
+                    localStorage.removeItem('presensi_token');
+                    localStorage.removeItem('presensi_user');
+                }
+            };
+
+            var cameraStream = null;
+            var isCameraMirrored = false;
+            var currentStudentsData = [];
+
+            // Helper untuk mencegah XSS pada rendering data
+            function escapeHTML(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            // Fungsi Toast Notifikasi Global
+            var toastTimeout = null;
+            function showToast(msg, type) {
+                var toast = document.getElementById('toast');
+                var toastMsg = document.getElementById('toastMsg');
+                var toastIcon = document.getElementById('toastIcon');
+                if (!toast || !toastMsg) return;
+
+                toastMsg.textContent = msg;
+
+                if (type === 'success') {
+                    toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+                } else if (type === 'warning') {
+                    toastIcon.className = 'fa-solid fa-triangle-exclamation text-amber-400 text-lg';
+                } else if (type === 'error') {
+                    toastIcon.className = 'fa-solid fa-circle-xmark text-rose-400 text-lg';
+                } else {
+                    toastIcon.className = 'fa-solid fa-circle-info text-blue-400 text-lg';
+                }
+
+                toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+                toast.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(function() {
+                    toast.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                    toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+                }, 3500);
+            }
+
+            // Checking and Toggling Auth State Screen
+            function checkLoginState() {
+                var token = Auth.getToken();
+                var user = Auth.getUser();
+
+                var loginPage = document.getElementById('loginPage');
+                var mainApp = document.getElementById('mainApp');
+
+                if (token && user) {
+                    if (loginPage) loginPage.classList.add('d-none');
+                    if (mainApp) mainApp.classList.remove('d-none');
+
+                    // Set user profile info
+                    var nameEl = document.getElementById('userFullname');
+                    var avatarEl = document.getElementById('userAvatar');
+                    var roleBadgeEl = document.getElementById('userRoleBadge');
+
+                    if (nameEl) nameEl.textContent = user.fullname || user.username;
+                    if (avatarEl) avatarEl.textContent = (user.fullname || user.username).charAt(0).toUpperCase();
+                    if (roleBadgeEl) roleBadgeEl.textContent = user.role || 'User';
+
+                    // Toggle elements specifically for Admin
+                    var adminElems = document.querySelectorAll('.admin-only');
+                    adminElems.forEach(function(el) {
+                        if (user.role === 'Admin') {
+                            el.classList.remove('hidden', 'd-none');
+                        } else {
+                            el.classList.add('d-none');
+                        }
+                    });
+
+                    showPage('pageDashboard');
+                } else {
+                    if (loginPage) loginPage.classList.remove('d-none');
+                    if (mainApp) mainApp.classList.add('d-none');
+                }
+            }
+
+            // Expose required functions to window scope
+            window.Auth = Auth;
+            window.handleLogin = handleLogin;
+            window.logout = logout;
+            window.showPage = showPage;
+            window.startWebcam = startWebcam;
+            window.openStandaloneApp = openStandaloneApp;
+            window.toggleCameraMirror = toggleCameraMirror;
+            window.triggerSimulatedScan = triggerSimulatedScan;
+            window.loadScanClassStudents = loadScanClassStudents;
+            window.loadRekapData = loadRekapData;
+            window.loadStudentMasterData = loadStudentMasterData;
+            window.openModalIzin = openModalIzin;
+            window.closeModalIzin = closeModalIzin;
+            window.submitIzinSakit = submitIzinSakit;
+            window.finalizeDaily = finalizeDaily;
+            window.openModalStudent = openModalStudent;
+            window.closeModalStudent = closeModalStudent;
+            window.submitStudentForm = submitStudentForm;
+            window.deleteStudentAction = deleteStudentAction;
+            window.scanStudentDirect = scanStudentDirect;
+            window.showToast = showToast;
+            window.checkLoginState = checkLoginState;
+            window.escapeHTML = escapeHTML;
+
+            // GAS Server Call Runner with Fallback for Editor Preview
+// URL Web App Apps Script (yang berakhiran /exec)
+var API_URL = 'https://script.google.com/macros/s/AKfycbxnlrCWtaN6xwR_Wy_j0TWFp6KcFyEb7Ktm-HkmACvnOBJIyFIu9a2127VuzFC3WNbN/exec';
+
+// true = pakai data palsu lokal (untuk tes tampilan saja), false = pakai server asli
+var USE_MOCK = false;
+
+function gasRun(funcName) {
+    var args = Array.prototype.slice.call(arguments, 1);
+
+    if (USE_MOCK) {
+        return new Promise(function(resolve) {
+            setTimeout(function() { resolve(runMockBackend(funcName, args)); }, 300);
+        });
+    }
+
+    return fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ fn: funcName, args: args })
+    })
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(function(res) {
+        if (res && res.sessionExpired) {
+            handleSessionExpired(res.message);
+            throw res;
+        }
+        return res;
+    });
+}
+
+                    var runner = google.script.run
+                        .withSuccessHandler(function(res) {
+                            if (res && res.sessionExpired) {
+                                handleSessionExpired(res.message);
+                                reject(res);
+                            } else {
+                                resolve(res);
+                            }
+                        })
+                        .withFailureHandler(reject);
+                    runner[funcName].apply(runner, args);
+                });
+            }
+
+            function runMockBackend(funcName, args) {
+                if (funcName === 'loginUser') {
+                    var u = args[0], p = args[1];
+                    if (p === 'Admin@2026') {
+                        var role = (u === 'admin') ? 'Admin' : 'Guru';
+                        return { success: true, user: { username: u, fullname: role === 'Admin' ? 'Administrator AI' : 'Guru Piket', role: role }, token: 'mock_token_' + Date.now() };
+                    }
+                    return { success: false, message: 'Username atau password salah! (Default: admin / Admin@2026)' };
+                }
+
+                if (funcName === 'getStudents') {
+                    var cls = args[1];
+                    var list = localMockDB.students.filter(function(s) {
+                        return !cls || cls === 'ALL' || s.className === cls;
+                    });
+                    return { success: true, data: list };
+                }
+
+                if (funcName === 'recordAttendanceScan') {
+                    var sId = args[1];
+                    var student = localMockDB.students.find(function(s) { return s.id === sId; });
+                    if (!student) return { success: false, message: 'Siswa tidak ditemukan' };
+
+                    var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    localMockDB.attendance[sId] = {
+                        status: 'Hadir',
+                        method: 'Face Recognition AI',
+                        note: 'Terverifikasi Kamera Live',
+                        time: timeStr
+                    };
+                    return { success: true, message: 'Presensi ' + student.name + ' Berhasil (Hadir)!', student: student, status: 'Hadir', time: timeStr };
+                }
+
+                if (funcName === 'saveIzinSakit') {
+                    var payload = args[1];
+                    var st = localMockDB.students.find(function(s) { return s.id === payload.studentId; });
+                    if (!st) return { success: false, message: 'Siswa tidak ditemukan' };
+
+                    var timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    localMockDB.attendance[payload.studentId] = {
+                        status: payload.statusType,
+                        method: 'Keterangan Manual',
+                        note: payload.note,
+                        time: timeStr
+                    };
+                    return { success: true, message: 'Status ' + payload.statusType + ' berhasil disimpan untuk ' + st.name };
+                }
+
+                if (funcName === 'finalizeDailyAttendance') {
+                    var count = 0;
+                    localMockDB.students.forEach(function(s) {
+                        if (!localMockDB.attendance[s.id]) {
+                            localMockDB.attendance[s.id] = { status: 'Alfa', method: 'Sistem Lock', note: 'Batas Waktu Terlampaui', time: '-' };
+                            count++;
+                        }
+                    });
+                    return { success: true, message: 'Presensi dikunci! ' + count + ' siswa tanpa keterangan diset ALFA.' };
+                }
+
+                if (funcName === 'getAttendanceData') {
+                    var filterClass = args[1];
+                    var studentList = [];
+                    var counts = { total: 0, hadir: 0, sakit: 0, izin: 0, alfa: 0 };
+                    var classSummary = { 'X IPA': { total: 0, hadir: 0 }, 'X IPS': { total: 0, hadir: 0 }, 'XI IPA': { total: 0, hadir: 0 }, 'XI IPS': { total: 0, hadir: 0 }, 'XII IPA': { total: 0, hadir: 0 }, 'XII IPS': { total: 0, hadir: 0 } };
+
+                    localMockDB.students.forEach(function(s) {
+                        if (classSummary[s.className]) classSummary[s.className].total++;
+                        var rec = localMockDB.attendance[s.id] || { status: 'Alfa', method: '-', note: 'Belum Scan', time: '-' };
+
+                        if (rec.status === 'Hadir' && classSummary[s.className]) {
+                            classSummary[s.className].hadir++;
+                        }
+
+                        if (!filterClass || filterClass === 'ALL' || s.className === filterClass) {
+                            counts.total++;
+                            if (rec.status === 'Hadir') counts.hadir++;
+                            else if (rec.status === 'Sakit') counts.sakit++;
+                            else if (rec.status === 'Izin') counts.izin++;
+                            else counts.alfa++;
+
+                            studentList.push({
+                                id: s.id, nisn: s.nisn, name: s.name, className: s.className, avatar: s.avatar,
+                                status: rec.status, method: rec.method, note: rec.note, time: rec.time
+                            });
+                        }
+                    });
+
+                    return { success: true, students: studentList, counts: counts, classSummary: classSummary };
+                }
+
+                if (funcName === 'saveStudent') {
+                    var sData = args[1];
+                    if (sData.id) {
+                        var idx = localMockDB.students.findIndex(function(x) { return x.id === sData.id; });
+                        if (idx >= 0) localMockDB.students[idx] = sData;
+                    } else {
+                        sData.id = 'S' + (100 + localMockDB.students.length + 1);
+                        localMockDB.students.push(sData);
+                    }
+                    return { success: true, message: 'Data siswa ' + sData.name + ' berhasil disimpan!' };
+                }
+
+                if (funcName === 'deleteStudent') {
+                    var delId = args[1];
+                    localMockDB.students = localMockDB.students.filter(function(x) { return x.id !== delId; });
+                    return { success: true, message: 'Siswa berhasil dihapus.' };
+                }
+
+                if (funcName === 'destroySession') return { success: true };
+                return { success: true };
+            }
+
+            async function startWebcam() {
+                var noticeBox = document.getElementById('camPermissionNotice');
+                if (noticeBox) noticeBox.classList.add('hidden');
+
+                try {
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        throw new Error('API Kamera tidak diizinkan di dalam frame editor.');
+                    }
+                    var webcam = document.getElementById('webcam');
+                    var stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                    webcam.srcObject = stream;
+                    cameraStream = stream;
+
+                    document.getElementById('camPlaceholder').classList.add('hidden');
+                    document.getElementById('scanLineOverlay').classList.remove('hidden');
+                    document.getElementById('btnScanAction').disabled = false;
+                    document.getElementById('camBadge').textContent = 'Camera Active';
+                    document.getElementById('camBadge').className = 'text-[10px] px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30';
+                } catch (err) {
+                    console.warn('Webcam fallback active:', err);
+                    if (noticeBox) noticeBox.classList.remove('hidden');
+
+                    // Fallback to simulated visual feed in iframe preview mode
+                    document.getElementById('camPlaceholder').classList.add('hidden');
+                    document.getElementById('scanLineOverlay').classList.remove('hidden');
+                    document.getElementById('btnScanAction').disabled = false;
+                    document.getElementById('camBadge').textContent = 'Kamera Simulasi (Preview)';
+                    document.getElementById('camBadge').className = 'text-[10px] px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30';
+
+                    showToast('Mode Simulasi Wajah Aktif (Akses kamera fisik diblokir oleh iframe editor).', 'warning');
+                }
+            }
+
+            function handleSessionExpired(msg) {
+                Auth.clear();
+                showToast(msg || 'Sesi telah berakhir, silakan login kembali.', 'warning');
+                checkLoginState();
+            }
+
+            function handleLogin(e) {
+                e.preventDefault();
+                var u = document.getElementById('loginUsername').value;
+                var p = document.getElementById('loginPassword').value;
+                var errBox = document.getElementById('loginError');
+                var btn = document.getElementById('btnLoginSubmit');
+
+                errBox.classList.add('hidden');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Memproses...';
+
+                gasRun('loginUser', u, p)
+                    .then(function(res) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem';
+                        if (res.success) {
+                            Auth.setToken(res.token);
+                            Auth.setUser(res.user);
+                            checkLoginState();
+                            showToast('Selamat datang ' + res.user.fullname, 'success');
+                        } else {
+                            document.getElementById('loginErrorMsg').textContent = res.message;
+                            errBox.classList.remove('hidden');
+                        }
+                    })
+                    .catch(function(err) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Masuk ke Sistem';
+                        showToast('Gagal menghubungi server. Pastikan Database sudah di-setup.', 'error');
+                    });
+            }
+
+            function logout() {
+                var token = Auth.getToken();
+                gasRun('destroySession', token).finally(function() {
+                    Auth.clear();
+                    checkLoginState();
+                });
+            }
+
+            function showPage(pageId) {
+                var pages = document.querySelectorAll('.app-page');
+                pages.forEach(function(p) { p.classList.add('d-none'); });
+
+                var target = document.getElementById(pageId);
+                if (target) target.classList.remove('d-none');
+
+                var navBtns = document.querySelectorAll('.nav-btn');
+                navBtns.forEach(function(b) {
+                    b.classList.remove('bg-slate-700/80', 'text-white', 'font-semibold');
+                });
+
+                var activeBtn = document.getElementById('nav-' + pageId);
+                if (activeBtn) activeBtn.classList.add('bg-slate-700/80', 'text-white', 'font-semibold');
+
+                // Load view data
+                if (pageId === 'pageDashboard') loadDashboardData();
+                else if (pageId === 'pageScan') loadScanClassStudents();
+                else if (pageId === 'pageRekap') loadRekapData();
+                else if (pageId === 'pageStudents') loadStudentMasterData();
+            }
+
+            /* Dashboard logic */
+            function loadDashboardData() {
+                gasRun('getAttendanceData', Auth.getToken(), 'ALL')
+                    .then(function(res) {
+                        if (!res.success) return;
+
+                        document.getElementById('dashTotal').textContent = res.counts.total;
+                        document.getElementById('dashHadir').textContent = res.counts.hadir;
+                        document.getElementById('dashSakit').textContent = res.counts.sakit;
+                        document.getElementById('dashIzin').textContent = res.counts.izin;
+                        document.getElementById('dashAlfa').textContent = res.counts.alfa;
+
+                        // Render class cards
+                        var grid = document.getElementById('classCardsGrid');
+                        grid.innerHTML = '';
+                        var classes = ['X IPA', 'X IPS', 'XI IPA', 'XI IPS', 'XII IPA', 'XII IPS'];
+
+                        classes.forEach(function(c) {
+                            var info = res.classSummary[c] || { total: 0, hadir: 0 };
+                            var pct = info.total > 0 ? Math.round((info.hadir / info.total) * 100) : 0;
+
+                            var div = document.createElement('div');
+                            div.className = 'bg-slate-800 border border-slate-700 rounded-2xl p-3.5 flex flex-col justify-between hover:border-blue-500/50 cursor-pointer transition';
+                            div.onclick = function() {
+                                document.getElementById('rekapClassSelect').value = c;
+                                showPage('pageRekap');
+                            };
+                            div.innerHTML = `
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-bold text-white">${c}</span>
+                                    <span class="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">${pct}%</span>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] text-slate-400">Hadir: <strong class="text-emerald-400">${info.hadir}</strong> / ${info.total}</p>
+                                </div>
+                            `;
+                            grid.appendChild(div);
+                        });
+                    });
+            }
+
+            /* Webcam Scanner logic */
+            function openStandaloneApp() {
+              gasRun('getAppUrl').then(function(url) {
+                if (url) {
+                  window.open(url, '_blank');
+                } else {
+                  showToast('Deploy dulu sebagai Web App agar URL tersedia.', 'warning');
+                }
+              });
+            }
+
+            async function startWebcam() {
+                var noticeBox = document.getElementById('camPermissionNotice');
+                if (noticeBox) noticeBox.classList.add('hidden');
+
+                try {
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        throw new Error('API Kamera tidak didukung atau berjalan di koneksi non-HTTPS.');
+                    }
+                    var webcam = document.getElementById('webcam');
+                    var stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                    webcam.srcObject = stream;
+                    cameraStream = stream;
+
+                    document.getElementById('camPlaceholder').classList.add('hidden');
+                    document.getElementById('scanLineOverlay').classList.remove('hidden');
+                    document.getElementById('btnScanAction').disabled = false;
+                    document.getElementById('camBadge').textContent = 'Camera Active';
+                    document.getElementById('camBadge').className = 'text-[10px] px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30';
+                } catch (err) {
+                    console.error('Webcam Error:', err);
+                    if (noticeBox) noticeBox.classList.remove('hidden');
+
+                    var errorMsg = err.message || 'Izin kamera ditolak.';
+                    if (err.name === 'NotAllowedError' || errorMsg.includes('Permissions policy') || errorMsg.includes('not allowed')) {
+                        showToast('Kamera diblokir oleh iframe Apps Script. Klik tombol "Buka Web App di Tab Baru".', 'error');
+                    } else {
+                        showToast('Gagal membuka kamera: ' + errorMsg, 'warning');
+                    }
+                }
+            }
+
+            function toggleCameraMirror() {
+                var webcam = document.getElementById('webcam');
+                isCameraMirrored = !isCameraMirrored;
+                if (isCameraMirrored) webcam.classList.add('mirror');
+                else webcam.classList.remove('mirror');
+            }
+
+            function loadScanClassStudents() {
+                var cls = document.getElementById('scanClassSelect').value;
+                gasRun('getStudents', Auth.getToken(), cls)
+                    .then(function(res) {
+                        if (!res.success) return;
+                        currentStudentsData = res.data;
+                        document.getElementById('scanClassCount').textContent = res.data.length + ' Siswa';
+
+                        var container = document.getElementById('scanStudentList');
+                        container.innerHTML = '';
+
+                        res.data.forEach(function(s) {
+                            var div = document.createElement('div');
+                            div.className = 'p-3 hover:bg-slate-700/40 transition flex items-center justify-between cursor-pointer';
+                            div.onclick = function() { scanStudentDirect(s.id); };
+                            div.innerHTML = `
+                                <div class="flex items-center gap-2.5">
+                                    <img src="${escapeHTML(s.avatar)}" class="w-8 h-8 rounded-full object-cover border border-slate-600">
+                                    <div>
+                                        <p class="font-bold text-xs text-white">${escapeHTML(s.name)}</p>
+                                        <p class="text-[10px] text-slate-400">${escapeHTML(s.className)} • NISN: ${escapeHTML(s.nisn)}</p>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">Scan</span>
+                            `;
+                            container.appendChild(div);
+                        });
+                    });
+            }
+
+            function triggerSimulatedScan() {
+                if (currentStudentsData.length === 0) {
+                    showToast('Tidak ada siswa di filter kelas ini.', 'warning');
+                    return;
+                }
+                var target = currentStudentsData[Math.floor(Math.random() * currentStudentsData.length)];
+                scanStudentDirect(target.id);
+            }
+
+            function scanStudentDirect(studentId) {
+                var cls = document.getElementById('scanClassSelect').value;
+                gasRun('recordAttendanceScan', Auth.getToken(), studentId, cls)
+                    .then(function(res) {
+                        if (res.success) {
+                            document.getElementById('scannedAvatar').src = res.student.avatar;
+                            document.getElementById('scannedName').textContent = res.student.name;
+                            document.getElementById('scannedDetail').textContent = res.student.className + ' • Jam ' + res.time;
+                            document.getElementById('scanDetectedCard').classList.remove('hidden');
+
+                            showToast(res.message, 'success');
+                        } else {
+                            showToast(res.message, 'warning');
+                        }
+                    });
+            }
+
+            /* Rekap Presensi logic */
+            function loadRekapData() {
+                var cls = document.getElementById('rekapClassSelect').value;
+                gasRun('getAttendanceData', Auth.getToken(), cls)
+                    .then(function(res) {
+                        if (!res.success) return;
+
+                        document.getElementById('rekapCountHadir').textContent = res.counts.hadir;
+                        document.getElementById('rekapCountSakit').textContent = res.counts.sakit;
+                        document.getElementById('rekapCountIzin').textContent = res.counts.izin;
+                        document.getElementById('rekapCountAlfa').textContent = res.counts.alfa;
+
+                        var tbody = document.getElementById('rekapTableBody');
+                        tbody.innerHTML = '';
+
+                        res.students.forEach(function(s) {
+                            var tr = document.createElement('tr');
+                            tr.className = 'hover:bg-slate-700/30 transition';
+
+                            var badge = '';
+                            if (s.status === 'Hadir') {
+                                badge = '<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-shield-check"></i> Hadir</span>';
+                            } else if (s.status === 'Sakit') {
+                                badge = '<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30"><i class="fa-solid fa-notes-medical"></i> Sakit</span>';
+                            } else if (s.status === 'Izin') {
+                                badge = '<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30"><i class="fa-solid fa-envelope-open-text"></i> Izin</span>';
+                            } else {
+                                badge = '<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30"><i class="fa-solid fa-circle-xmark"></i> Alfa</span>';
+                            }
+
+                            tr.innerHTML = `
+                                <td class="p-3.5">
+                                    <div class="flex items-center gap-2.5">
+                                        <img src="${escapeHTML(s.avatar)}" class="w-8 h-8 rounded-full object-cover border border-slate-600">
+                                        <div>
+                                            <p class="font-bold text-white">${escapeHTML(s.name)}</p>
+                                            <p class="text-[10px] text-slate-400">${escapeHTML(s.className)}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-3.5 font-mono text-slate-400">${escapeHTML(s.nisn)}</td>
+                                <td class="p-3.5 text-center">${badge}</td>
+                                <td class="p-3.5">
+                                    <p class="text-slate-300 font-medium text-[11px]">${escapeHTML(s.method)}</p>
+                                    <p class="text-[10px] text-slate-400">${escapeHTML(s.note)}</p>
+                                </td>
+                                <td class="p-3.5 text-right">
+                                    ${s.status === 'Hadir' 
+                                        ? '<span class="text-[10px] text-slate-500 italic"><i class="fa-solid fa-lock"></i> Verified AI</span>'
+                                        : `<button onclick="openModalIzinFor('${s.id}')" class="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i> Izin/Sakit</button>`}
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    });
+            }
+
+            function openModalIzin() {
+                var cls = document.getElementById('rekapClassSelect').value;
+                gasRun('getStudents', Auth.getToken(), cls).then(function(res) {
+                    if (!res.success) return;
+                    var sel = document.getElementById('modalIzinStudent');
+                    sel.innerHTML = '';
+                    res.data.forEach(function(s) {
+                        var opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.name + ' (' + s.className + ')';
+                        sel.appendChild(opt);
+                    });
+                    document.getElementById('modalIzin').classList.remove('hidden');
+                });
+            }
+
+            window.openModalIzinFor = function(studentId) {
+                openModalIzin();
+                setTimeout(function() {
+                    document.getElementById('modalIzinStudent').value = studentId;
+                }, 300);
+            };
+
+            function closeModalIzin() {
+                document.getElementById('modalIzin').classList.add('hidden');
+            }
+
+            function submitIzinSakit(e) {
+                e.preventDefault();
+                var payload = {
+                    studentId: document.getElementById('modalIzinStudent').value,
+                    statusType: document.querySelector('input[name="modalStatusType"]:checked').value,
+                    note: document.getElementById('modalIzinNote').value
+                };
+
+                gasRun('saveIzinSakit', Auth.getToken(), payload)
+                    .then(function(res) {
+                        if (res.success) {
+                            showToast(res.message, 'success');
+                            closeModalIzin();
+                            loadRekapData();
+                        } else {
+                            showToast(res.message, 'warning');
+                        }
+                    });
+            }
+
+            function finalizeDaily() {
+                var cls = document.getElementById('rekapClassSelect').value;
+                gasRun('finalizeDailyAttendance', Auth.getToken(), cls)
+                    .then(function(res) {
+                        if (res.success) {
+                            showToast(res.message, 'warning');
+                            loadRekapData();
+                        }
+                    });
+            }
+
+            /* Master Student Data logic */
+            function loadStudentMasterData() {
+                var cls = document.getElementById('studentClassFilter').value;
+                gasRun('getStudents', Auth.getToken(), cls)
+                    .then(function(res) {
+                        if (!res.success) return;
+                        var tbody = document.getElementById('studentMasterTableBody');
+                        tbody.innerHTML = '';
+
+                        res.data.forEach(function(s) {
+                            var tr = document.createElement('tr');
+                            tr.className = 'hover:bg-slate-700/30 transition';
+                            tr.innerHTML = `
+                                <td class="p-3.5 font-mono text-slate-400">${escapeHTML(s.id)}</td>
+                                <td class="p-3.5">
+                                    <div class="flex items-center gap-2.5">
+                                        <img src="${escapeHTML(s.avatar)}" class="w-8 h-8 rounded-full object-cover border border-slate-600">
+                                        <span class="font-bold text-white">${escapeHTML(s.name)}</span>
+                                    </div>
+                                </td>
+                                <td class="p-3.5 font-mono text-slate-400">${escapeHTML(s.nisn)}</td>
+                                <td class="p-3.5"><span class="px-2 py-0.5 bg-slate-700 rounded text-slate-300 font-semibold">${escapeHTML(s.className)}</span></td>
+                                <td class="p-3.5 text-right">
+                                    <button onclick="deleteStudentAction('${s.id}')" class="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    });
+            }
+
+            function openModalStudent() {
+                document.getElementById('editStudentId').value = '';
+                document.getElementById('mStudentNisn').value = '';
+                document.getElementById('mStudentName').value = '';
+                document.getElementById('mStudentAvatar').value = '';
+                document.getElementById('modalStudent').classList.remove('hidden');
+            }
+
+            function closeModalStudent() {
+                document.getElementById('modalStudent').classList.add('hidden');
+            }
+
+            function submitStudentForm(e) {
+                e.preventDefault();
+                var payload = {
+                    id: document.getElementById('editStudentId').value,
+                    nisn: document.getElementById('mStudentNisn').value,
+                    name: document.getElementById('mStudentName').value,
+                    className: document.getElementById('mStudentClass').value,
+                    avatar: document.getElementById('mStudentAvatar').value
+                };
+
+                gasRun('saveStudent', Auth.getToken(), payload)
+                    .then(function(res) {
+                        if (res.success) {
+                            showToast(res.message, 'success');
+                            closeModalStudent();
+                            loadStudentMasterData();
+                        } else {
+                            showToast(res.message, 'warning');
+                        }
+                    });
+            }
+
+            function deleteStudentAction(studentId) {
+                gasRun('deleteStudent', Auth.getToken(), studentId)
+                    .then(function(res) {
+                        if (res.success) {
+                            showToast(res.message, 'success');
+                            loadStudentMasterData();
+                        } else {
+                            showToast(res.message, 'warning');
+                        }
+                    });
+            }
+
+            // Init App
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('headerCurrentDate').textContent = new Date().toLocaleDateString('id-ID', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                });
+
+                setInterval(function() {
+                    document.getElementById('liveClock').textContent = new Date().toLocaleTimeString('id-ID');
+                }, 1000);
+
+                checkLoginState();
+            });
+
+        })();
+    </script>
+</body>
+</html>

@@ -688,20 +688,6 @@ function gasRun(funcName) {
     });
 }
 
-                    var runner = google.script.run
-                        .withSuccessHandler(function(res) {
-                            if (res && res.sessionExpired) {
-                                handleSessionExpired(res.message);
-                                reject(res);
-                            } else {
-                                resolve(res);
-                            }
-                        })
-                        .withFailureHandler(reject);
-                    runner[funcName].apply(runner, args);
-                });
-            }
-
             function runMockBackend(funcName, args) {
                 if (funcName === 'loginUser') {
                     var u = args[0], p = args[1];
